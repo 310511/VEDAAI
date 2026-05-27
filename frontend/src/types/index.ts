@@ -66,9 +66,5 @@ export interface CreateAssignmentPayload {
   dueDate: string;
   questionTypes: QuestionType[];
   additionalInstructions?: string;
-  file?: {
-    name: string;
-    size: number;
-    type: string;
-  } | null;
+  file?: File | Blob | null;
 }
