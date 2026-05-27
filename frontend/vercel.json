@@ -1,0 +1,15 @@
+{
+  "framework": "nextjs",
+  "regions": ["bom1"],
+  "functions": {
+    "src/app/api/internal/generate/[id]/route.ts": {
+      "maxDuration": 300
+    },
+    "src/app/api/assignments/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/assignments/[id]/result/pdf/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}

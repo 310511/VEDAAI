@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f4f1eb;
+  --foreground: #1a1814;
+}
+
+@layer base {
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    background-image: radial-gradient(
+      ellipse 120% 80% at 50% -20%,
+      rgba(27, 77, 74, 0.06),
+      transparent 55%
+    );
+  }
+
+  ::selection {
+    @apply bg-accent-soft text-accent;
+  }
+}
+
+@layer components {
+  .input-field {
+    @apply w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm text-ink
+      placeholder:text-subtle transition-colors
+      focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15;
+  }
+
+  .label-text {
+    @apply block text-sm font-medium text-ink;
+  }
+
+  .card {
+    @apply rounded-xl border border-border bg-surface shadow-card;
+  }
+
+  .section-title {
+    @apply font-display text-lg font-semibold tracking-tight text-ink;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    background-image: none !important;
+  }
+}
