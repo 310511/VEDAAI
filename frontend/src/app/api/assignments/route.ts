@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    console.error("[VedaAI] Assignment creation error:", error);
     const message = error instanceof Error ? error.message : "Failed to create assignment";
     return NextResponse.json({ error: message }, { status: 500 });
   }

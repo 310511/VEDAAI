@@ -49,8 +49,8 @@ export default function CreateAssignmentPage() {
   const [dueDate, setDueDate] = useState("");
   const [questionTypes, setQuestionTypes] = useState<QuestionType[]>(DEFAULT_ROWS);
   const [additionalInstructions, setAdditionalInstructions] = useState("");
-  const [mainFile, setMainFile] = useState<File | undefined>(undefined);
-  const [supplementaryFile, setSupplementaryFile] = useState<File | undefined>(undefined);
+  const [mainFile, setMainFile] = useState<any>(undefined);
+  const [supplementaryFile, setSupplementaryFile] = useState<any>(undefined);
 
   const totals = useMemo(
     () => ({
@@ -386,8 +386,9 @@ export default function CreateAssignmentPage() {
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
                 e.preventDefault();
-                const f = e.dataTransfer.files[0];
-                if (f) setMainFile(f);
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                  setMainFile(e.dataTransfer.files[0]);
+                }
               }}
             >
               <IconUpload className="text-subtle" />
@@ -457,8 +458,9 @@ export default function CreateAssignmentPage() {
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
                 e.preventDefault();
-                const f = e.dataTransfer.files[0];
-                if (f) setSupplementaryFile(f);
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                  setSupplementaryFile(e.dataTransfer.files[0]);
+                }
               }}
             >
               <IconUpload className="text-subtle" />

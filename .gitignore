@@ -43,3 +43,6 @@ frontend/out/
 
 # Testing
 coverage/
+
+# Local Netlify folder
+.netlify
