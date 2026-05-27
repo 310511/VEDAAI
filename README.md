@@ -152,6 +152,7 @@ npm run dev:clean
 | `GEMINI_API_KEY` | Yes | Google Gemini API key |
 | `GEMINI_MODEL` | No | Model id (e.g. `gemini-2.5-flash`, `gemini-1.5-flash`) |
 | `QSTASH_TOKEN` | Yes (prod) | Upstash QStash token for background job processing |
+| `NEXT_PUBLIC_APP_URL` | Yes (prod) | App URL for QStash webhooks (e.g., `https://your-app.vercel.app`). Local dev: leave unset (runs synchronously) |
 | `INTERNAL_API_SECRET` | No | Secret for `/api/internal/generate/[id]` (fallback if QStash not configured) |
 | `NEXT_PUBLIC_API_URL` | No | If set, UI calls this host instead of same-origin API (Express backend) |
 | `NEXT_PUBLIC_WS_URL` | No | Socket.io URL when using Express backend |
@@ -198,6 +199,7 @@ Base URL: same origin as the app (e.g. `http://localhost:3000`) unless `NEXT_PUB
    - `GEMINI_API_KEY`
    - `GEMINI_MODEL` (optional)
    - `QSTASH_TOKEN` — Get from [Upstash Console](https://console.upstash.com/qstash)
+   - `NEXT_PUBLIC_APP_URL` — Your Vercel deployment URL (e.g., `https://your-app.vercel.app`)
    - `INTERNAL_API_SECRET` — long random string (fallback if QStash not configured)
 
 4. Deploy. Background generation uses **Upstash QStash** for reliable job processing with automatic retries.
@@ -207,7 +209,14 @@ Base URL: same origin as the app (e.g. `http://localhost:3000`) unless `NEXT_PUB
 1. Create an account at [console.upstash.com](https://console.upstash.com)
 2. Go to QStash and create a new topic (e.g., "vedaai-generation")
 3. Copy the QStash Token to your Vercel environment variables
-4. QStash will trigger `/api/internal/generate/:id` via HTTP webhook
+4. Set `NEXT_PUBLIC_APP_URL` to your Vercel deployment URL
+5. QStash will trigger `/api/internal/generate/:id` via HTTP webhook
+
+**Local Development**
+
+- Leave `NEXT_PUBLIC_APP_URL` unset in `.env.local`
+- Generation will run synchronously (QStash is skipped to avoid loopback address errors)
+- To test QStash locally, use a tunnel like ngrok and set `NEXT_PUBLIC_APP_URL` to the tunnel URL
 
 **Production notes**
 
