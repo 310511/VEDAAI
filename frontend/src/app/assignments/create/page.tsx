@@ -49,8 +49,8 @@ export default function CreateAssignmentPage() {
   const [dueDate, setDueDate] = useState("");
   const [questionTypes, setQuestionTypes] = useState<QuestionType[]>(DEFAULT_ROWS);
   const [additionalInstructions, setAdditionalInstructions] = useState("");
-  const [mainFile, setMainFile] = useState<File | null>(null);
-  const [supplementaryFile, setSupplementaryFile] = useState<File | null>(null);
+  const [mainFile, setMainFile] = useState<File | undefined>(undefined);
+  const [supplementaryFile, setSupplementaryFile] = useState<File | undefined>(undefined);
 
   const totals = useMemo(
     () => ({
@@ -402,7 +402,7 @@ export default function CreateAssignmentPage() {
                   type="file"
                   accept=".pdf,image/*"
                   className="sr-only"
-                  onChange={(e) => setMainFile(e.target.files?.[0] || null)}
+                  onChange={(e) => setMainFile(e.target.files?.[0] || undefined)}
                 />
               </label>
               {mainFile && (
@@ -469,7 +469,7 @@ export default function CreateAssignmentPage() {
                 <input
                   type="file"
                   className="sr-only"
-                  onChange={(e) => setSupplementaryFile(e.target.files?.[0] || null)}
+                  onChange={(e) => setSupplementaryFile(e.target.files?.[0] || undefined)}
                 />
               </label>
               {supplementaryFile && (
