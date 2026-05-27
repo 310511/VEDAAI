@@ -22,22 +22,26 @@ Built for the VedaAI hiring assignment: Next.js 14, TypeScript, MongoDB, Google 
 
 ## Architecture
 
-The **recommended path** is a single **Next.js 14** app (`frontend/`) with API Route Handlers — deployable on Vercel without a separate server.
+The **recommended path** is a single **Next.js 14** app (`frontend/`) with API Route Handlers and **Upstash QStash** for reliable background job processing — deployable on Vercel without a separate server.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │  Next.js 14 (App Router) — localhost:3000 / Vercel               │
 │  ├── UI: /assignments, /assignments/create, /assignments/:id/result │
-│  └── API: /api/assignments/*  +  /api/internal/generate/:id      │
+│  ├── API: /api/assignments/*                                     │
+│  └── Background: Upstash QStash → /api/internal/generate/:id     │
 └────────────────────────────┬─────────────────────────────────────┘
                              │
                 ┌────────────▼────────────┐
                 │  MongoDB (local/Atlas)  │
                 └────────────┬────────────┘
                              │
-                ┌────────────▼────────────┐
-                │  Google Gemini API      │
-                └─────────────────────────┘
+          ┌──────────────────┼──────────────────┐
+          │                  │                  │
+┌─────────▼─────────┐ ┌─────▼──────┐ ┌────────▼────────┐
+│  Upstash QStash   │ │  Google    │ │  PDF Generation │
+│  (job queue)      │ │  Gemini    │ │  (PDFKit)       │
+└───────────────────┘ └────────────┘ └─────────────────┘
 ```
 
 **Optional** (local / advanced): `backend/` Express server with **BullMQ**, **Redis**, **Socket.io**, and Puppeteer-based PDF — point the frontend at it via `NEXT_PUBLIC_API_URL`.
@@ -147,7 +151,8 @@ npm run dev:clean
 | `MONGODB_URI` | Yes | MongoDB connection string |
 | `GEMINI_API_KEY` | Yes | Google Gemini API key |
 | `GEMINI_MODEL` | No | Model id (e.g. `gemini-2.5-flash`, `gemini-1.5-flash`) |
-| `INTERNAL_API_SECRET` | Yes (prod) | Secret for `/api/internal/generate/[id]` |
+| `QSTASH_TOKEN` | Yes (prod) | Upstash QStash token for background job processing |
+| `INTERNAL_API_SECRET` | No | Secret for `/api/internal/generate/[id]` (fallback if QStash not configured) |
 | `NEXT_PUBLIC_API_URL` | No | If set, UI calls this host instead of same-origin API (Express backend) |
 | `NEXT_PUBLIC_WS_URL` | No | Socket.io URL when using Express backend |
 
@@ -186,15 +191,23 @@ Base URL: same origin as the app (e.g. `http://localhost:3000`) unless `NEXT_PUB
 ## Deploy to Vercel
 
 1. Push the repository to GitHub.
-2. Import in [Vercel](https://vercel.com). Root `vercel.json` sets **`rootDirectory`: `frontend`**.
+2. Import in [Vercel](https://vercel.com).
 3. Set environment variables in the Vercel project:
 
    - `MONGODB_URI` — **Atlas** (not localhost)
    - `GEMINI_API_KEY`
    - `GEMINI_MODEL` (optional)
-   - `INTERNAL_API_SECRET` — long random string
+   - `QSTASH_TOKEN` — Get from [Upstash Console](https://console.upstash.com/qstash)
+   - `INTERNAL_API_SECRET` — long random string (fallback if QStash not configured)
 
-4. Deploy. Long-running generation uses `/api/internal/generate/[id]` (`maxDuration` 300s on Pro — see `frontend/vercel.json`).
+4. Deploy. Background generation uses **Upstash QStash** for reliable job processing with automatic retries.
+
+**Upstash QStash Setup**
+
+1. Create an account at [console.upstash.com](https://console.upstash.com)
+2. Go to QStash and create a new topic (e.g., "vedaai-generation")
+3. Copy the QStash Token to your Vercel environment variables
+4. QStash will trigger `/api/internal/generate/:id` via HTTP webhook
 
 **Production notes**
 
