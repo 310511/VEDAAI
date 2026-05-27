@@ -22,29 +22,23 @@ Built for the VedaAI hiring assignment: Next.js 14, TypeScript, MongoDB, Google 
 
 ## Architecture
 
-The **recommended path** is a single **Next.js 14** app (`frontend/`) with API Route Handlers and **Inngest** for reliable background job processing — deployable on Vercel without a separate server.
+The **recommended path** is a single **Next.js 14** app (`frontend/`) with API Route Handlers — deployable on Vercel without a separate server.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │  Next.js 14 (App Router) — localhost:3000 / Vercel               │
 │  ├── UI: /assignments, /assignments/create, /assignments/:id/result │
-│  ├── API: /api/assignments/*                                     │
-│  └── Inngest: /api/inngest (background job processing)          │
+│  └── API: /api/assignments/*  +  /api/internal/generate/:id      │
 └────────────────────────────┬─────────────────────────────────────┘
                              │
                 ┌────────────▼────────────┐
                 │  MongoDB (local/Atlas)  │
                 └────────────┬────────────┘
                              │
-          ┌──────────────────┼──────────────────┐
-          │                  │                  │
-┌─────────▼─────────┐ ┌─────▼──────┐ ┌────────▼────────┐
-│  Inngest Cloud    │ │  Google    │ │  PDF Generation │
-│  (job queue)      │ │  Gemini    │ │  (PDFKit)       │
-└───────────────────┘ └────────────┘ └─────────────────┘
+                ┌────────────▼────────────┐
+                │  Google Gemini API      │
+                └─────────────────────────┘
 ```
-
-**Legacy** (not recommended): Vercel's `waitUntil` with internal API endpoint (`/api/internal/generate/:id`) — has timeout limitations.
 
 **Optional** (local / advanced): `backend/` Express server with **BullMQ**, **Redis**, **Socket.io**, and Puppeteer-based PDF — point the frontend at it via `NEXT_PUBLIC_API_URL`.
 
@@ -153,9 +147,7 @@ npm run dev:clean
 | `MONGODB_URI` | Yes | MongoDB connection string |
 | `GEMINI_API_KEY` | Yes | Google Gemini API key |
 | `GEMINI_MODEL` | No | Model id (e.g. `gemini-2.5-flash`, `gemini-1.5-flash`) |
-| `INNGEST_EVENT_KEY` | Yes (prod) | Inngest event key for background job processing |
-| `INNGEST_SIGNING_KEY` | Yes (prod) | Inngest signing key for webhook verification |
-| `INTERNAL_API_SECRET` | No | Legacy: Secret for `/api/internal/generate/[id]` (not needed with Inngest) |
+| `INTERNAL_API_SECRET` | Yes (prod) | Secret for `/api/internal/generate/[id]` |
 | `NEXT_PUBLIC_API_URL` | No | If set, UI calls this host instead of same-origin API (Express backend) |
 | `NEXT_PUBLIC_WS_URL` | No | Socket.io URL when using Express backend |
 
@@ -187,10 +179,7 @@ Base URL: same origin as the app (e.g. `http://localhost:3000`) unless `NEXT_PUB
 | `GET` | `/api/assignments/:id/result` | Generated paper JSON, or `{ ready: false, status }` while pending |
 | `GET` | `/api/assignments/:id/result/pdf` | Download question paper as **PDF** |
 | `POST` | `/api/assignments/:id/regenerate` | Trigger new generation |
-| `GET/POST/PUT` | `/api/inngest` | Inngest webhook endpoint for background job processing |
-
-**Legacy endpoint** (not recommended):
-| `POST` | `/api/internal/generate/:id` | Background generation via Vercel waitUntil (has timeout limits) |
+| `POST` | `/api/internal/generate/:id` | Background generation (requires `Authorization` / secret) |
 
 ---
 
@@ -203,17 +192,9 @@ Base URL: same origin as the app (e.g. `http://localhost:3000`) unless `NEXT_PUB
    - `MONGODB_URI` — **Atlas** (not localhost)
    - `GEMINI_API_KEY`
    - `GEMINI_MODEL` (optional)
-   - `INNGEST_EVENT_KEY` — Get from [Inngest dashboard](https://app.inngest.com)
-   - `INNGEST_SIGNING_KEY` — Get from [Inngest dashboard](https://app.inngest.com)
+   - `INTERNAL_API_SECRET` — long random string
 
-4. Deploy. Background generation uses **Inngest** for reliable job processing with automatic retries.
-
-**Inngest Setup**
-
-1. Create an account at [app.inngest.com](https://app.inngest.com)
-2. Create a new app (e.g., "vedaai")
-3. Copy the `Event Key` and `Signing Key` to your Vercel environment variables
-4. Inngest will automatically discover your functions via the `/api/inngest` endpoint
+4. Deploy. Long-running generation uses `/api/internal/generate/[id]` (`maxDuration` 300s on Pro — see `frontend/vercel.json`).
 
 **Production notes**
 
@@ -265,7 +246,6 @@ npm run dev
 | UI | Next.js 14 (App Router), React 18, TypeScript, Tailwind CSS |
 | State | Zustand (client), polling on result page |
 | API (default) | Next.js Route Handlers |
-| Background jobs | Inngest (recommended) / Vercel waitUntil (legacy) |
 | Database | MongoDB + Mongoose |
 | AI | Google Gemini (`@google/generative-ai`) |
 | PDF | PDFKit (Next.js path) / Puppeteer (optional backend) |
