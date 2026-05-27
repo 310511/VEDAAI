@@ -1,0 +1,24 @@
+services:
+  mongodb:
+    image: mongo:7.0.14
+    container_name: vedaai-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+  # Optional — only needed for the separate Express/BullMQ backend
+  redis:
+    profiles: ["with-redis"]
+    image: redis:7-alpine
+    container_name: vedaai-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+  redis_data:
