@@ -49,8 +49,8 @@ export default function CreateAssignmentPage() {
   const [dueDate, setDueDate] = useState("");
   const [questionTypes, setQuestionTypes] = useState<QuestionType[]>(DEFAULT_ROWS);
   const [additionalInstructions, setAdditionalInstructions] = useState("");
-  const [mainFile, setMainFile] = useState<any>(undefined);
-  const [supplementaryFile, setSupplementaryFile] = useState<any>(undefined);
+  const [mainFile, setMainFile] = useState<{ name: string; size: number; type: string } | undefined>(undefined);
+  const [supplementaryFile, setSupplementaryFile] = useState<{ name: string; size: number; type: string } | undefined>(undefined);
 
   const totals = useMemo(
     () => ({
