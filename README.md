@@ -60,7 +60,8 @@ VEDAAI/
 ├── backend/                  # Optional Express + worker + WebSocket
 ├── scripts/                  # Docker & local dev helpers
 ├── docker-compose.yml        # MongoDB (+ Redis profile)
-└── vercel.json               # Root → frontend on Vercel
+├── netlify.toml              # Netlify deployment configuration
+└── vercel.json               # Vercel deployment configuration (alternative)
 ```
 
 ---
@@ -189,7 +190,44 @@ Base URL: same origin as the app (e.g. `http://localhost:3000`) unless `NEXT_PUB
 
 ---
 
-## Deploy to Vercel
+## Deploy to Netlify (Recommended)
+
+1. Push the repository to GitHub.
+2. Import in [Netlify](https://netlify.com).
+3. Set environment variables in Netlify Site Settings → Environment Variables:
+
+   - `MONGODB_URI` — **Atlas** (not localhost)
+   - `GEMINI_API_KEY`
+   - `GEMINI_MODEL` (optional)
+   - `QSTASH_TOKEN` — Get from [Upstash Console](https://console.upstash.com/qstash)
+   - `NEXT_PUBLIC_APP_URL` — Your Netlify deployment URL (e.g., `https://your-app.netlify.app`)
+   - `INTERNAL_API_SECRET` — long random string (fallback if QStash not configured)
+
+4. Deploy. Background generation uses **Upstash QStash** for reliable job processing with automatic retries.
+
+**Upstash QStash Setup**
+
+1. Create an account at [console.upstash.com](https://console.upstash.com)
+2. Go to QStash and create a new topic (e.g., "vedaai-generation")
+3. Copy the QStash Token to your Netlify environment variables
+4. Set `NEXT_PUBLIC_APP_URL` to your Netlify deployment URL
+5. QStash will trigger `/api/internal/generate/:id` via HTTP webhook
+
+**Local Development**
+
+- Leave `NEXT_PUBLIC_APP_URL` unset in `.env.local`
+- Generation will run synchronously (QStash is skipped to avoid loopback address errors)
+- To test QStash locally, use a tunnel like ngrok and set `NEXT_PUBLIC_APP_URL` to the tunnel URL
+
+**Production notes**
+
+- Use MongoDB Atlas with network access allowed for Netlify.
+- PDF generation uses **PDFKit** (no headless Chrome on serverless).
+- The UI **polls** assignment status on Netlify; the optional Express path can use **WebSocket** instead.
+
+---
+
+## Deploy to Vercel (Alternative)
 
 1. Push the repository to GitHub.
 2. Import in [Vercel](https://vercel.com).
@@ -203,26 +241,6 @@ Base URL: same origin as the app (e.g. `http://localhost:3000`) unless `NEXT_PUB
    - `INTERNAL_API_SECRET` — long random string (fallback if QStash not configured)
 
 4. Deploy. Background generation uses **Upstash QStash** for reliable job processing with automatic retries.
-
-**Upstash QStash Setup**
-
-1. Create an account at [console.upstash.com](https://console.upstash.com)
-2. Go to QStash and create a new topic (e.g., "vedaai-generation")
-3. Copy the QStash Token to your Vercel environment variables
-4. Set `NEXT_PUBLIC_APP_URL` to your Vercel deployment URL
-5. QStash will trigger `/api/internal/generate/:id` via HTTP webhook
-
-**Local Development**
-
-- Leave `NEXT_PUBLIC_APP_URL` unset in `.env.local`
-- Generation will run synchronously (QStash is skipped to avoid loopback address errors)
-- To test QStash locally, use a tunnel like ngrok and set `NEXT_PUBLIC_APP_URL` to the tunnel URL
-
-**Production notes**
-
-- Use MongoDB Atlas with network access allowed for Vercel.
-- PDF generation uses **PDFKit** (no headless Chrome on serverless).
-- The UI **polls** assignment status on Vercel; the optional Express path can use **WebSocket** instead.
 
 ---
 
