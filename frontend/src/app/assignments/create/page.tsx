@@ -49,8 +49,8 @@ export default function CreateAssignmentPage() {
   const [dueDate, setDueDate] = useState("");
   const [questionTypes, setQuestionTypes] = useState<QuestionType[]>(DEFAULT_ROWS);
   const [additionalInstructions, setAdditionalInstructions] = useState("");
-  const [mainFile, setMainFile] = useState<File | Blob | undefined>(undefined);
-  const [supplementaryFile, setSupplementaryFile] = useState<File | Blob | undefined>(undefined);
+  const [mainFile, setMainFile] = useState<File | undefined>(undefined);
+  const [supplementaryFile, setSupplementaryFile] = useState<File | undefined>(undefined);
 
   const totals = useMemo(
     () => ({
@@ -408,7 +408,7 @@ export default function CreateAssignmentPage() {
               </label>
               {mainFile && (
                 <p className="mt-3 break-all text-sm font-medium text-accent">
-                  {"name" in mainFile ? mainFile.name : "File selected"}
+                  {mainFile.name || "File selected"}
                 </p>
               )}
             </div>
@@ -478,7 +478,7 @@ export default function CreateAssignmentPage() {
               </label>
               {supplementaryFile && (
                 <p className="mt-3 break-all text-sm font-medium text-accent">
-                  {"name" in supplementaryFile ? supplementaryFile.name : "File selected"}
+                  {supplementaryFile.name || "File selected"}
                 </p>
               )}
             </div>
