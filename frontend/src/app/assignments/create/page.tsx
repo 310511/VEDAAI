@@ -407,7 +407,9 @@ export default function CreateAssignmentPage() {
                 />
               </label>
               {mainFile && (
-                <p className="mt-3 break-all text-sm font-medium text-accent">{mainFile.name}</p>
+                <p className="mt-3 break-all text-sm font-medium text-accent">
+                  {"name" in mainFile ? mainFile.name : "File selected"}
+                </p>
               )}
             </div>
 
@@ -476,7 +478,7 @@ export default function CreateAssignmentPage() {
               </label>
               {supplementaryFile && (
                 <p className="mt-3 break-all text-sm font-medium text-accent">
-                  {supplementaryFile.name}
+                  {"name" in supplementaryFile ? supplementaryFile.name : "File selected"}
                 </p>
               )}
             </div>
